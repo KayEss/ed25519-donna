@@ -7,7 +7,7 @@
 
 /* define ED25519_SUFFIX to have it appended to the end of each public function */
 #if !defined(ED25519_SUFFIX)
-#define ED25519_SUFFIX 
+#define ED25519_SUFFIX
 #endif
 
 #define ED25519_FN3(fn,suffix) fn##suffix
@@ -33,12 +33,12 @@ ed25519_extsk(hash_512bits extsk, const ed25519_secret_key sk) {
 
 static void
 ed25519_hram(hash_512bits hram, const ed25519_signature RS, const ed25519_public_key pk, const unsigned char *m, size_t mlen) {
-	ed25519_hash_context ctx;
+	ed25519_hash_context *ctx;
 	ed25519_hash_init(&ctx);
-	ed25519_hash_update(&ctx, RS, 32);
-	ed25519_hash_update(&ctx, pk, 32);
-	ed25519_hash_update(&ctx, m, mlen);
-	ed25519_hash_final(&ctx, hram);
+	ed25519_hash_update(ctx, RS, 32);
+	ed25519_hash_update(ctx, pk, 32);
+	ed25519_hash_update(ctx, m, mlen);
+	ed25519_hash_final(ctx, hram);
 }
 
 void
@@ -57,7 +57,7 @@ ED25519_FN(ed25519_publickey) (const ed25519_secret_key sk, ed25519_public_key p
 
 void
 ED25519_FN(ed25519_sign) (const unsigned char *m, size_t mlen, const ed25519_secret_key sk, const ed25519_public_key pk, ed25519_signature RS) {
-	ed25519_hash_context ctx;
+	ed25519_hash_context *ctx;
 	bignum256modm r, S, a;
 	ge25519 ALIGN(16) R;
 	hash_512bits extsk, hashr, hram;
@@ -66,9 +66,9 @@ ED25519_FN(ed25519_sign) (const unsigned char *m, size_t mlen, const ed25519_sec
 
 	/* r = H(aExt[32..64], m) */
 	ed25519_hash_init(&ctx);
-	ed25519_hash_update(&ctx, extsk + 32, 32);
-	ed25519_hash_update(&ctx, m, mlen);
-	ed25519_hash_final(&ctx, hashr);
+	ed25519_hash_update(ctx, extsk + 32, 32);
+	ed25519_hash_update(ctx, m, mlen);
+	ed25519_hash_final(ctx, hashr);
 	expand256_modm(r, hashr, 64);
 
 	/* R = rB */
@@ -86,7 +86,7 @@ ED25519_FN(ed25519_sign) (const unsigned char *m, size_t mlen, const ed25519_sec
 	/* S = (r + H(R,A,m)a) */
 	add256_modm(S, S, r);
 
-	/* S = (r + H(R,A,m)a) mod L */	
+	/* S = (r + H(R,A,m)a) mod L */
 	contract256_modm(RS + 32, S);
 }
 
