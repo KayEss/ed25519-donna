@@ -191,14 +191,16 @@ ed25519_hash(uint8_t *hash, const uint8_t *in, size_t inlen) {
 
 #else
 
+#include <openssl/evp.h>
 #include <openssl/sha.h>
+
 
 typedef EVP_MD_CTX ed25519_hash_context;
 
 static void
 ed25519_hash_init(ed25519_hash_context **ctx) {
 	*ctx = EVP_MD_CTX_new();
-	EVP_DigestInit_ex2(*ctx, EVP_sha512(), NULL);
+	EVP_DigestInit_ex(*ctx, EVP_sha512(), NULL);
 }
 
 static void
